@@ -33,6 +33,9 @@ public class VehicleService {
     }
 
     static Vehicle readNextVehicle() {
+        if (!fileName.isEmpty()) {
+            readSavedVehicles();
+        }
         Vehicle vehicle = vehicles.poll();
         System.out.println(vehicle);
         return vehicle;
@@ -47,19 +50,20 @@ public class VehicleService {
     }
 
     static Queue<Vehicle> readSavedVehicles() {
-        try {
-            Scanner scan = new Scanner(new File(fileName));
+        try (Scanner scan = new Scanner(new File(fileName))) {
             while (scan.hasNextLine()) {
                 String line = scan.nextLine();
-                String[] split = line.split(",");
-                int year = Integer.parseInt(split[3]);
-                int mileage = Integer.parseInt(split[4]);
-                Vehicle vehicle = new Vehicle(split[0], split[1], split[2], year, mileage, split[5]);
-                vehicles.offer(vehicle);
+                if (!line.isEmpty()) {
+                    String[] split = line.split(",");
+                    int year = Integer.parseInt(split[3]);
+                    int mileage = Integer.parseInt(split[4]);
+                    Vehicle vehicle = new Vehicle(split[0], split[1], split[2], year, mileage, split[5]);
+                    vehicles.offer(vehicle);
+                }
             }
+            return vehicles;
         } catch (FileNotFoundException e) {
-            System.out.println("Nie znaleziono pliku!");
+            throw new RuntimeException(e);
         }
-        return vehicles;
     }
 }
